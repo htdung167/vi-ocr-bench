@@ -1,0 +1,36 @@
+[project]
+name = "vi-ocr-bench"
+version = "0.2.0"
+description = "Vietnamese handwriting OCR benchmark with reusable diacritic-aware metrics."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "datasets>=3.0.0",
+    "jiwer>=3.0.0",
+    "rapidfuzz>=3.0.0",
+    "tqdm>=4.0.0",
+]
+
+[project.optional-dependencies]
+paddleocr = [
+    "paddleocr[all]>=3.6.0",
+]
+hf = [
+    "transformers>=4.45.0",
+    "accelerate>=0.33.0",
+    "pillow>=10.0.0",
+    "torch>=2.0.0",
+]
+chandra = [
+    "chandra-ocr[hf]>=0.2.0",
+]
+
+[project.scripts]
+vi-ocr-metrics = "vi_metrics.cli:main"
+
+[tool.setuptools]
+py-modules = ["benchmark", "evaluate"]
+
+[tool.setuptools.packages.find]
+include = ["vi_metrics*"]
+exclude = ["output*", "model_scripts*"]
