@@ -72,7 +72,6 @@ async def predict(image_path: str) -> str:
         b64 = base64.b64encode(f.read()).decode("utf-8")
 
     messages = [
-        {"role": "system", "content": "You are a helpful assistant."},
         {
             "role": "user",
             "content": [
@@ -85,7 +84,7 @@ async def predict(image_path: str) -> str:
     response = await client.chat.completions.create(
         model=MODEL_ID,
         messages=messages,
-        max_tokens=1024,
+        max_tokens=15000,
         temperature=0.0,
     )
     raw = response.choices[0].message.content.strip()

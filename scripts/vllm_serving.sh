@@ -35,6 +35,7 @@ CUDA_VISIBLE_DEVICES=0 vllm serve models/tencent/HunyuanOCR \
 # nanonets/Nanonets-OCR2-3B (3B)
 # CUDA_VISIBLE_DEVICES=0 vllm serve models/nanonets/Nanonets-OCR2-3B \
 #     --port 8089 \
+#     --dtype bfloat16 \
 #     --gpu-memory-utilization 0.92 \
 #     --limit-mm-per-prompt '{"image": 1}' \
 #     --mm-processor-kwargs '{"max_pixels": 1003520}' \
