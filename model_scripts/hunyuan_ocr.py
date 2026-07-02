@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import asyncio
 import base64
@@ -6,7 +8,7 @@ from openai import AsyncOpenAI
 
 from benchmark import run_benchmark_async
 
-MODEL_ID = "tencent/HunyuanOCR"
+MODEL_ID = "models/tencent/HunyuanOCR"
 PROMPT = "提取图中的文字。"
 
 parser = argparse.ArgumentParser()
