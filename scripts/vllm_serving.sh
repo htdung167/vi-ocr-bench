@@ -24,7 +24,7 @@ CUDA_VISIBLE_DEVICES=0 vllm serve models/tencent/HunyuanOCR \
 #                     --trust-remote-code
 
 # deepseek-ai/DeepSeek-OCR-2 (3B)
-# CUDA_VISIBLE_DEVICES=0 vllm serve deepseek-ai/DeepSeek-OCR-2 \
+# CUDA_VISIBLE_DEVICES=0 vllm serve models/deepseek-ai/DeepSeek-OCR-2 \
 #     --port 8089 \
 #     --gpu-memory-utilization 0.9 \
 #     --trust-remote-code \
