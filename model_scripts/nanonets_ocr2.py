@@ -84,7 +84,7 @@ async def predict(image_path: str) -> str:
     response = await client.chat.completions.create(
         model=MODEL_ID,
         messages=messages,
-        max_tokens=15000,
+        max_tokens=1024,
         temperature=0.0,
     )
     raw = response.choices[0].message.content.strip()
