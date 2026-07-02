@@ -25,10 +25,12 @@ CUDA_VISIBLE_DEVICES=0 vllm serve models/tencent/HunyuanOCR \
 
 # deepseek-ai/DeepSeek-OCR-2 (3B)
 # CUDA_VISIBLE_DEVICES=0 vllm serve deepseek-ai/DeepSeek-OCR-2 \
-#   --trust-remote-code \
-#   --logits_processors vllm.model_executor.models.deepseek_ocr:NGramPerReqLogitsProcessor \
-#   --no-enable-prefix-caching \
-#   --mm-processor-cache-gb 0
+#     --port 8089 \
+#     --gpu-memory-utilization 0.9 \
+#     --trust-remote-code \
+#     --logits_processors vllm.model_executor.models.deepseek_ocr:NGramPerReqLogitsProcessor \
+#     --no-enable-prefix-caching \
+#     --mm-processor-cache-gb 0
 
 # nanonets/Nanonets-OCR2-3B (3B)
 # CUDA_VISIBLE_DEVICES=0 vllm serve models/nanonets/Nanonets-OCR2-3B \
