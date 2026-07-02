@@ -94,8 +94,10 @@ def load_image(image_file, input_size=448, max_num=12):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--max-samples", type=int, default=None)
-parser.add_argument("--device-map", default="auto")
+parser.add_argument("--device", default="cuda:1", help="VD: cuda:0, cuda:1")
 args = parser.parse_args()
+
+device = torch.device(args.device)
 
 model = AutoModel.from_pretrained(
     MODEL_ID,
@@ -103,7 +105,7 @@ model = AutoModel.from_pretrained(
     low_cpu_mem_usage=True,
     trust_remote_code=True,
     use_flash_attn=False,
-).eval().cuda()
+).eval().to(device)
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True, use_fast=False)
 
@@ -116,7 +118,7 @@ generation_config = dict(
 
 
 def predict(image_path: str) -> str:
-    pixel_values = load_image(image_path, max_num=6).to(torch.bfloat16).cuda()
+    pixel_values = load_image(image_path, max_num=6).to(torch.bfloat16).to(device)
 
     response, _ = model.chat(
         tokenizer,
