@@ -1,6 +1,6 @@
 """vi-ocr-bench: Vietnamese OCR Benchmark
 
-Cách dùng đơn giản nhất:
+Cách dùng đơn giản nhất (sync):
 
     from benchmark import run_benchmark
 
@@ -10,6 +10,16 @@ Cách dùng đơn giản nhất:
         return model.ocr(image_path)
 
     run_benchmark("my-model", predict)
+
+Async cho các model serving qua API:
+
+    import asyncio
+    from benchmark import run_benchmark_async
+
+    async def predict_async(image_path):
+        return await call_api(image_path)
+
+    asyncio.run(run_benchmark_async("my-model", predict_async, max_concurrency=16))
 
 Nếu cần kiểm soát nhiều hơn:
 
@@ -28,15 +38,17 @@ Nếu cần kiểm soát nhiều hơn:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import tempfile
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable
+from typing import Awaitable, Callable
 
 from datasets import load_dataset as hf_load_dataset
 from tqdm import tqdm
+from tqdm.asyncio import tqdm as atqdm
 
 from vi_metrics import evaluate_all
 
@@ -124,4 +136,47 @@ def run_benchmark(
             sample["image"].save(img_path)
             predictions.append(predict_fn(str(img_path)))
 
+    return save_and_evaluate(model_name, predictions, references, split, output_dir)
+
+
+async def run_benchmark_async(
+    model_name: str,
+    predict_fn: Callable[[str], Awaitable[str]],
+    *,
+    split: str = "test",
+    max_samples: int | None = None,
+    max_concurrency: int = 16,
+    output_dir: Path | str = OUTPUT_DIR,
+) -> dict:
+    """Run benchmark bất đồng bộ cho các model serving qua API.
+
+    predict_fn: async function, nhận image_path (str), trả về text (str).
+    max_concurrency: số request song song tối đa (default 16).
+    """
+    samples = load_dataset(split=split, max_samples=max_samples)
+    references = [s["text"] for s in samples]
+    n = len(samples)
+    predictions: list[str | None] = [None] * n
+
+    semaphore = asyncio.Semaphore(max_concurrency)
+    pbar = atqdm(total=n, desc=model_name, unit="img")
+
+    async def _predict_one(idx: int, img_path: str) -> None:
+        async with semaphore:
+            predictions[idx] = await predict_fn(img_path)
+            pbar.update(1)
+
+    with tempfile.TemporaryDirectory(prefix="vi_ocr_bench_") as tmp_dir:
+        tmp = Path(tmp_dir)
+        # Lưu ảnh ra đĩa trước (sync, nhanh) rồi chạy predict song song
+        img_paths: list[str] = []
+        for i, sample in enumerate(samples):
+            img_path = tmp / f"{i:06d}.png"
+            sample["image"].save(img_path)
+            img_paths.append(str(img_path))
+
+        tasks = [_predict_one(i, p) for i, p in enumerate(img_paths)]
+        await asyncio.gather(*tasks)
+
+    pbar.close()
     return save_and_evaluate(model_name, predictions, references, split, output_dir)
