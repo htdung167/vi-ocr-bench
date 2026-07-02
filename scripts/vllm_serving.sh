@@ -41,5 +41,5 @@ CUDA_VISIBLE_DEVICES=0 vllm serve models/tencent/HunyuanOCR \
 #     --mm-processor-kwargs '{"max_pixels": 1003520}' \
 #     --max-model-len 8192 \
 #     --max-num-seqs 32 \
-#     --enable-prefix-caching \
+#     --no-enable-prefix-caching \
 #     --trust-remote-code
