@@ -23,7 +23,7 @@ PROMPT = (
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--max-samples", type=int, default=None)
-parser.add_argument("--max-concurrency", type=int, default=16)
+parser.add_argument("--max-concurrency", type=int, default=32)
 parser.add_argument("--api-base", default="http://localhost:8089/v1")
 args = parser.parse_args()
 
@@ -85,7 +85,7 @@ async def predict(image_path: str) -> str:
     response = await client.chat.completions.create(
         model=MODEL_ID,
         messages=messages,
-        max_tokens=2048,
+        max_tokens=1024,
         temperature=0.0,
     )
     raw = response.choices[0].message.content.strip()
