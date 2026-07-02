@@ -37,14 +37,18 @@ async def predict(image_path: str) -> str:
     response = await client.chat.completions.create(
         model=MODEL_ID,
         messages=messages,
-        max_tokens=2048,
+        max_tokens=1024,
         temperature=0.0,
+        extra_body={
+            "repetition_penalty": 2.5,
+            "best_of": 3,
+        },
     )
 
-    if "NO_TEXT" == response.choices[0].message.content.strip():
+    result = response.choices[0].message.content.strip()
+    if result == "NO_TEXT":
         return ""
-
-    return response.choices[0].message.content.strip()
+    return result
 
 
 asyncio.run(
