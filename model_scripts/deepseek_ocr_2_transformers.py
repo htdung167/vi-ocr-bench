@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 import argparse
 
 import torch
@@ -43,7 +46,7 @@ def predict(image_path: str) -> str:
         tokenizer,
         prompt=PROMPT,
         image_file=image_path,
-        output_path=None,
+        output_path="test",
         base_size=1024,
         image_size=768,
         crop_mode=True,
