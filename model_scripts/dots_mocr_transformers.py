@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import sys
+import types
 
 import torch
 from PIL import Image
 from qwen_vl_utils import process_vision_info
-from transformers import AutoModelForCausalLM, AutoProcessor
+from transformers import AutoConfig, AutoModelForCausalLM, AutoProcessor
 
 from benchmark import run_benchmark
 
@@ -17,13 +19,34 @@ parser.add_argument("--max-samples", type=int, default=None)
 parser.add_argument("--device", default="cuda:0", help="VD: cuda:0, cuda:1")
 args = parser.parse_args()
 
-device = torch.device(args.device)
 
-processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
+def register_flash_attn_import_stub() -> None:
+    try:
+        import flash_attn  # noqa: F401
+    except ModuleNotFoundError:
+        flash_attn_stub = types.ModuleType("flash_attn")
+
+        def flash_attn_varlen_func(*args, **kwargs):
+            raise RuntimeError("FlashAttention is disabled; use eager attention.")
+
+        flash_attn_stub.flash_attn_varlen_func = flash_attn_varlen_func
+        sys.modules["flash_attn"] = flash_attn_stub
+
+
+register_flash_attn_import_stub()
+
+processor = AutoProcessor.from_pretrained(
+    MODEL_ID,
+    trust_remote_code=True,
+    use_fast=False,
+)
+config = AutoConfig.from_pretrained(MODEL_ID, trust_remote_code=True)
+config.vision_config.attn_implementation = "eager"
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_ID,
+    config=config,
     attn_implementation="eager",
-    torch_dtype=torch.bfloat16,
+    dtype=torch.bfloat16,
     trust_remote_code=True,
     device_map=args.device,
 )
