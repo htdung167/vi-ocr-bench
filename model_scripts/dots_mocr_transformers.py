@@ -96,7 +96,7 @@ def predict(image_path: str) -> str:
         clean_up_tokenization_spaces=False,
     )[0]
 
-    return output_text.strip()
+    return output_text.strip().replace("<|endofassistant|>", "").strip()
 
 
 run_benchmark("dots-mocr-transformers", predict, max_samples=args.max_samples)
