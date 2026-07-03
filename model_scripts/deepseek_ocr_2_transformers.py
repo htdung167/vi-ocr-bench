@@ -18,7 +18,7 @@ parser.add_argument("--max-samples", type=int, default=None)
 parser.add_argument("--device", default="cuda:0", help="VD: cuda:0, cuda:1")
 parser.add_argument(
     "--attn-impl",
-    default="flash_attention_2",
+    default="eager",
     choices=["flash_attention_2", "eager"],
     help="Attention implementation (default: flash_attention_2)",
 )
