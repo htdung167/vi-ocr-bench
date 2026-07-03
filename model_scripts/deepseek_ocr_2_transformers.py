@@ -4,6 +4,7 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import argparse
+import os
 
 import torch
 from transformers import AutoModel, AutoTokenizer
@@ -20,11 +21,13 @@ parser.add_argument(
     "--attn-impl",
     default="eager",
     choices=["flash_attention_2", "eager"],
-    help="Attention implementation (default: flash_attention_2)",
+    help="Attention implementation (default: eager)",
 )
 args = parser.parse_args()
 
 device = torch.device(args.device)
+
+torch.cuda.set_device(device)
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
 model = AutoModel.from_pretrained(
@@ -33,12 +36,7 @@ model = AutoModel.from_pretrained(
     trust_remote_code=True,
     use_safetensors=True,
 )
-model = model.eval().to(device).to(torch.bfloat16)
-
-generation_config = dict(
-    max_new_tokens=2048,
-    do_sample=False,
-)
+model = model.eval().to(device=device, dtype=torch.bfloat16)
 
 
 def predict(image_path: str) -> str:
@@ -46,16 +44,17 @@ def predict(image_path: str) -> str:
         tokenizer,
         prompt=PROMPT,
         image_file=image_path,
-        output_path="test",
+        output_path=os.path.dirname(image_path),
         base_size=1024,
         image_size=768,
         crop_mode=True,
         save_results=False,
+        eval_mode=True,
     )
 
-    if isinstance(result, list):
-        return "\n".join(str(r) for r in result).strip()
-    return str(result).strip()
+    if not isinstance(result, str):
+        raise RuntimeError(f"DeepSeek-OCR-2 returned {type(result).__name__}, expected str")
+    return result.strip()
 
 
 run_benchmark("deepseek-ocr-2-transformers", predict, max_samples=args.max_samples)
