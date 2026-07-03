@@ -22,6 +22,7 @@ device = torch.device(args.device)
 processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_ID,
+    attn_implementation="eager",
     torch_dtype=torch.bfloat16,
     trust_remote_code=True,
     device_map=args.device,
